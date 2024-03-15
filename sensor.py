@@ -78,9 +78,10 @@ for i in range(10):
         v /= maxv
 
     # calculate motion
-    motion = (np.corrcoef(v, prev)[0][1])**2
-    motion = -10 * motion + 10
-    send_buf.append(dict(time=ts, motion=motion, rssi=rssi,mac=mac_str, seq=seq))
+    if prev is not None:
+        motion = (np.corrcoef(v, prev)[0][1])**2
+        motion = -10 * motion + 10
+        send_buf.append(dict(time=ts, motion=motion, rssi=rssi,mac=mac_str, seq=seq))
     prev = v
 
 
