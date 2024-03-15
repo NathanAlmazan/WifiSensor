@@ -40,6 +40,7 @@ print(f"Descriptor ID {fd}")
 start = time.time()
 prev = None
 buffer = []
+data_array = []
 
 while (time.time() - start) < 61:
     # receive data from socket
@@ -53,6 +54,9 @@ while (time.time() - start) < 61:
     if len(data) < 18:
         print("rx: packet too small")
         continue
+
+    # collect data arrays
+    data_array.append(np.frombuffer(data, dtype=np.int16))
 
     # process packet
     s, ns = struct.unpack('LL', ancdata[0][2])
@@ -99,6 +103,24 @@ while (time.time() - start) < 61:
 print("\n")
 sock.close()
 
+# save collected data
+filename = f"collected_csi_{int(time.time())}"
+
 # save time series data
 df = pd.DataFrame(buffer)
-df.to_csv(f"./time_series/collected_csi_{int(time.time())}.csv", index=False)
+df.to_csv(f"./time_series/{filename}.csv", index=False)
+
+# ensure that data array sizes are equal
+padded_array = []
+for array in data_array:
+    if len(array) > 521:
+        padded_array.append(array[:521])
+    elif len(array) < 521:
+        padded_array.append(np.pad(array, (0, 521 - len(array)), 'constant', constant_values=0))
+
+# convert to numpy array
+data_array = np.array(padded_array)
+print(data_array.shape)
+
+# save data arrays
+np.save(f"./buffers/{filename}.npy", data_array)
