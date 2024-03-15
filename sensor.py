@@ -88,8 +88,12 @@ while (time.time() - start) < 60:
         buffer.append(dict(time=ts, motion=motion, rssi=rssi,mac=mac_str, seq=seq))
     prev = v
 
+    # logger
+    eta = (time.time() - start) - 60
+    print(f"ETA: {int(eta)}")
+
 sock.close()
 
 # save time series data
 df = pd.DataFrame(buffer)
-df.to_csv(f"./time_series/collected_csi_{int(time.time())}.csv")
+df.to_csv(f"./time_series/collected_csi_{int(time.time())}.csv", index=False)
