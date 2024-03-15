@@ -96,6 +96,7 @@ while (time.time() - start) < 61:
     bar = '█' * num_blocks + '-' * (bar_length - num_blocks)
     print(f'\r[{bar}] {(num_blocks * 2)}%', end='', flush=True)
 
+print("\n")
 sock.close()
 
 # save time series data
