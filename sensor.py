@@ -2,6 +2,7 @@ import socket
 import struct
 import time
 import numpy as np
+import pandas as pd
 
 # set connection info
 UDP_IP = "0.0.0.0"
@@ -32,12 +33,15 @@ fd = sock.fileno()
 
 print(f"Descriptor ID {fd}")
 
+"""
+    START RECORDING PACKETS
+"""
 
-
+start = time.time()
 prev = None
-send_buf = []
+buffer = []
 
-for i in range(10):
+while (time.time() - start) < 60:
     # receive data from socket
     try:
         data, ancdata, _, _ = sock.recvmsg(4096, 128)
@@ -81,10 +85,11 @@ for i in range(10):
     if prev is not None:
         motion = (np.corrcoef(v, prev)[0][1])**2
         motion = -10 * motion + 10
-        send_buf.append(dict(time=ts, motion=motion, rssi=rssi,mac=mac_str, seq=seq))
+        buffer.append(dict(time=ts, motion=motion, rssi=rssi,mac=mac_str, seq=seq))
     prev = v
-
 
 sock.close()
 
-print(send_buf)
+# save time series data
+df = pd.DataFrame(buffer)
+df.to_csv(f"./time_series/collected_csi_{int(time.time())}.csv")
