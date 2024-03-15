@@ -31,18 +31,19 @@ sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 sock.bind((UDP_IP, UDP_PORT))
 fd = sock.fileno()
 
-print(f"Descriptor ID {fd}")
+print(f"Collecting from descriptor ID {fd}")
 
 """
     START RECORDING PACKETS
 """
 
 start = time.time()
+end = 60
 prev = None
 buffer = []
 data_array = []
 
-while (time.time() - start) < 61:
+while (time.time() - start) < (end + 1):
     # receive data from socket
     try:
         data, ancdata, _, _ = sock.recvmsg(4096, 128)
@@ -95,8 +96,8 @@ while (time.time() - start) < 61:
     # progress bar
     bar_length = 50
     progress = int(time.time() - start)
-    progress = min(60, max(0, progress))
-    num_blocks = int(round(bar_length * progress / 60))
+    progress = min(end, max(0, progress))
+    num_blocks = int(round(bar_length * progress / end))
     bar = '█' * num_blocks + '-' * (bar_length - num_blocks)
     print(f'\r[{bar}] {(num_blocks * 2)}%', end='', flush=True)
 
@@ -122,7 +123,6 @@ for array in data_array:
 
 # convert to numpy array
 data_array = np.array(padded_array)
-print(data_array.shape)
 
 # save data arrays
 np.save(f"./buffers/{filename}.npy", data_array)
