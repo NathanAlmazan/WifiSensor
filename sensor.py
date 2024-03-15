@@ -41,7 +41,7 @@ start = time.time()
 prev = None
 buffer = []
 
-while (time.time() - start) < 60:
+while (time.time() - start) < 61:
     # receive data from socket
     try:
         data, ancdata, _, _ = sock.recvmsg(4096, 128)
@@ -88,9 +88,13 @@ while (time.time() - start) < 60:
         buffer.append(dict(time=ts, motion=motion, rssi=rssi,mac=mac_str, seq=seq))
     prev = v
 
-    # logger
-    eta = (time.time() - start) - 60
-    print(f"ETA: {int(eta)}")
+    # progress bar
+    bar_length = 50
+    progress = int(time.time() - start)
+    progress = min(60, max(0, progress))
+    num_blocks = int(round(bar_length * progress / 60))
+    bar = '█' * num_blocks + '-' * (bar_length - num_blocks)
+    print(f'\r[{bar}] {(num_blocks * 2)}%', end='', flush=True)
 
 sock.close()
 
