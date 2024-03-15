@@ -117,6 +117,8 @@ for array in data_array:
         padded_array.append(array[:521])
     elif len(array) < 521:
         padded_array.append(np.pad(array, (0, 521 - len(array)), 'constant', constant_values=0))
+    else:
+        padded_array.append(array)
 
 # convert to numpy array
 data_array = np.array(padded_array)
