@@ -41,7 +41,7 @@ start = time.time()
 end = 60
 prev = None
 buffer = []
-data_array = []
+byte_array = []
 
 while (time.time() - start) < (end + 1):
     # receive data from socket
@@ -56,8 +56,8 @@ while (time.time() - start) < (end + 1):
         print("rx: packet too small")
         continue
 
-    # collect data arrays
-    data_array.append(np.frombuffer(data, dtype=np.int16))
+    # get bytes arrays
+    bytes = np.frombuffer(data, dtype=np.int16)
 
     # process packet
     s, ns = struct.unpack('LL', ancdata[0][2])
@@ -86,11 +86,12 @@ while (time.time() - start) < (end + 1):
     if maxv != 0:
         v /= maxv
 
-    # calculate motion
+    # calculate motion using Pearson correlation
     if prev is not None:
         motion = (np.corrcoef(v, prev)[0][1])**2
         motion = -10 * motion + 10
-        buffer.append(dict(time=ts, motion=motion, rssi=rssi,mac=mac_str, seq=seq))
+        buffer.append(dict(time=ts, motion=motion, rssi=rssi,mac=mac_str, seq=seq))  # collect buffers
+        byte_array.append(bytes)  # collect bytes
     prev = v
 
     # progress bar
@@ -111,9 +112,9 @@ filename = f"collected_csi_{int(time.time())}"
 df = pd.DataFrame(buffer)
 df.to_csv(f"./time_series/{filename}.csv", index=False)
 
-# ensure that data array sizes are equal
+# ensure that byte array sizes are equal
 padded_array = []
-for array in data_array:
+for array in byte_array:
     if len(array) > 521:
         padded_array.append(array[:521])
     elif len(array) < 521:
